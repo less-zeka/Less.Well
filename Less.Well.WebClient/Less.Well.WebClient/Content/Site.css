@@ -22,3 +22,10 @@ select,
 textarea {
     max-width: 280px;
 }
+
+/* map container. need to set height*/
+.map-container {
+    min-height: 300px;
+    width: 400px;
+    height: 400px;
+}

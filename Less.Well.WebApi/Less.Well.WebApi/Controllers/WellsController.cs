@@ -4,11 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using System.Web.Http.Description;
 using Less.Well.WebApi.Models;
 
 namespace Less.Well.WebApi.Controllers
-{
+{    
+    [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class WellsController : ApiController
     {
         private LessWellWebApiContext db = new LessWellWebApiContext();
