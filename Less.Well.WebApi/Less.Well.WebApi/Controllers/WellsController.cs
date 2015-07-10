@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
@@ -7,25 +8,54 @@ using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.Description;
 using Less.Well.WebApi.Models;
+using Less.Well.WebApi.Utils;
 
 namespace Less.Well.WebApi.Controllers
-{    
+{
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class WellsController : ApiController
     {
-        private LessWellWebApiContext db = new LessWellWebApiContext();
+        private readonly LessWellWebApiContext _database = new LessWellWebApiContext();
 
         // GET: api/Wells
-        public IQueryable<Models.Well> GetWells()
+        // GET: api/Routes?longitude=7.4792713&latitude=46.9742651
+        [HttpGet]
+        [ResponseType(typeof (IQueryable<Models.Well>))]
+        public IHttpActionResult GetWells(double lat, double lon)
         {
-            return db.Wells;
+            var userLocation = GeoUtils.CreatePoint(lat, lon);
+            var nearestWells = (from u in _database.Wells
+                orderby u.DbGeography.Distance(userLocation)
+                select u).Take(5);
+            return Ok(nearestWells);
         }
 
+        // just for temp use?!
+        [Route("test")] // <-- notice the route here
+        [HttpGet]
+        public IHttpActionResult CleanUpWells()
+        {
+            foreach (var well in _database.Wells)
+            {
+                if (well.DbGeography == null)
+                {
+                    well.DbGeography = GeoUtils.CreatePoint(well.Latitude, well.Longitude);
+                }
+            }
+            _database.SaveChanges();
+            return Ok();
+        }
+
+        //public IQueryable<Models.Well> GetWells()
+        //{
+        //    return db.Wells;
+        //}
+
         // GET: api/Wells/5
-        [ResponseType(typeof(Models.Well))]
+        [ResponseType(typeof (Models.Well))]
         public async Task<IHttpActionResult> GetWell(int id)
         {
-            var well = await db.Wells.FindAsync(id);
+            var well = await _database.Wells.FindAsync(id);
             if (well == null)
             {
                 return NotFound();
@@ -35,7 +65,7 @@ namespace Less.Well.WebApi.Controllers
         }
 
         // PUT: api/Wells/5
-        [ResponseType(typeof(void))]
+        [ResponseType(typeof (void))]
         public async Task<IHttpActionResult> PutWell(int id, Models.Well well)
         {
             if (!ModelState.IsValid)
@@ -48,11 +78,11 @@ namespace Less.Well.WebApi.Controllers
                 return BadRequest();
             }
 
-            db.Entry(well).State = EntityState.Modified;
+            _database.Entry(well).State = EntityState.Modified;
 
             try
             {
-                await db.SaveChangesAsync();
+                await _database.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -70,32 +100,51 @@ namespace Less.Well.WebApi.Controllers
         }
 
         // POST: api/Wells
-        [ResponseType(typeof(Models.Well))]
+        [ResponseType(typeof (Models.Well))]
+        [HttpPost]
         public async Task<IHttpActionResult> PostWell(Models.Well well)
+        //public async Task<IHttpActionResult> PostWell(double lat, double lon)
         {
-            if (!ModelState.IsValid)
+            if(!ModelIsValid(well))
             {
                 return BadRequest(ModelState);
             }
 
-            db.Wells.Add(well);
-            await db.SaveChangesAsync();
+            _database.Wells.Add(well);
+            await _database.SaveChangesAsync();
 
-            return CreatedAtRoute("DefaultApi", new { id = well.Id }, well);
+            return CreatedAtRoute("DefaultApi", new {id = well.Id}, well);
+        }
+
+        private bool ModelIsValid(Models.Well well)
+        {
+            if (well.DbGeography == null)
+            {
+                if (!(Math.Abs(well.Latitude) < 0.0 || Math.Abs(well.Longitude) < 0.0))
+                {
+                    well.DbGeography = GeoUtils.CreatePoint(well.Latitude, well.Longitude);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return ModelState.IsValid;
         }
 
         // DELETE: api/Wells/5
-        [ResponseType(typeof(Models.Well))]
+        [ResponseType(typeof (Models.Well))]
         public async Task<IHttpActionResult> DeleteWell(int id)
         {
-            var well = await db.Wells.FindAsync(id);
+            var well = await _database.Wells.FindAsync(id);
             if (well == null)
             {
                 return NotFound();
             }
 
-            db.Wells.Remove(well);
-            await db.SaveChangesAsync();
+            _database.Wells.Remove(well);
+            await _database.SaveChangesAsync();
 
             return Ok(well);
         }
@@ -104,14 +153,14 @@ namespace Less.Well.WebApi.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                _database.Dispose();
             }
             base.Dispose(disposing);
         }
 
         private bool WellExists(int id)
         {
-            return db.Wells.Count(e => e.Id == id) > 0;
+            return _database.Wells.Count(e => e.Id == id) > 0;
         }
     }
 }

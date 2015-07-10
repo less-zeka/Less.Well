@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Data.Entity;
 using System.Web.Http;
-using System.Web.Routing;
+using Less.Well.WebApi.Models;
 
 namespace Less.Well.WebApi
 {
@@ -11,6 +8,8 @@ namespace Less.Well.WebApi
     {
         protected void Application_Start()
         {
+            Database.SetInitializer<LessWellWebApiContext>(null);
+
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }
     }
