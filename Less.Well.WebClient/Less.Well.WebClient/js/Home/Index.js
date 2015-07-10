@@ -16,7 +16,12 @@ $(document).ready(function () {
     getUserPosition();
 
     $('#addWell').click(function () {
+        // Do something here!
+        $('#addWell').toggle();
+        $('#addWellConfirmation').toggle();
+    });
 
+    $('#addWellConfirmation').click(function () {
         // Do something here!
         alert('Merci, notiere mrs grad!');
         addWell();
@@ -122,9 +127,3 @@ function addWell() {
     });
 }
 
-var randomThanks = ["Has scho notiert!", "Merci gau!", "Merci gäu!", "Super sach.", "Fröie mi scho mau ds probiere :-)"];
-
-function getRandomThanks() {
-    return randomThanks[Math.floor(Math.random() * randomThanks.length)];
-
-}
