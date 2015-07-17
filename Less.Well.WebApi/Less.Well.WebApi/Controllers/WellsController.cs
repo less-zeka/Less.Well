@@ -12,7 +12,7 @@ using Less.Well.WebApi.Utils;
 
 namespace Less.Well.WebApi.Controllers
 {
-    [EnableCors(origins: "*", headers: "*", methods: "*")]
+    [EnableCors(origins: "http://elixir.cheese-maker.ch, http://localhost:64129", headers: "*", methods: "*")]
     public class WellsController : ApiController
     {
         private readonly LessWellWebApiContext _database = new LessWellWebApiContext();

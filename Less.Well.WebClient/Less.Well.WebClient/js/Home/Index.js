@@ -10,49 +10,104 @@ var wells = {};
 var userLocationLatitude;
 var userLocationLongitude;
 
-// get all Employees on page load!
-$(document).ready(function () {
-    initializeMap();
-    getUserPosition();
+var userLocation;
+var google;
 
-    $('#addWell').click(function () {
-        // Do something here!
+// get all Employees on page load!
+$(document).ready(function() {
+    //initializeMap();
+    //getUserPosition();
+    initLocationProcedure();
+
+    $('#addWell').click(function() {
         $('#addWell').toggle();
+        focusOnUser();
         $('#addWellConfirmation').toggle();
     });
 
-    $('#addWellConfirmation').click(function () {
-        // Do something here!
+    $('#addWellConfirmation').click(function() {
         alert('Merci, notiere mrs grad!');
         addWell();
     });
 });
 
-function initializeMap() {
+function initLocationProcedure() {
     map = new google.maps.Map(document.getElementById('map-canvas'));
-    map.setZoom(13);      // This will trigger a zoom_changed on the map
+    map.setZoom(15); // This will trigger a zoom_changed on the map
     map.setCenter(new google.maps.LatLng(0, 0));
     map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+
+
+    if (navigator.geolocation) {
+        //navigator.geolocation.getCurrentPosition(displayAndWatch, locError, {
+        //    enableHighAccuracy: true,
+        //    timeout: 60000,
+        //    maximumAge: 0
+        //});
+        var watchID = navigator.geolocation.watchPosition(function(position) {
+            displayAndWatch(position.coords.latitude, position.coords.longitude);
+        });
+    } else {
+        alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
+    }
 }
 
-function showLocation(position) {
-    var latLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+function locError(error) {
+    // the current position could not be located
+    alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
+}
 
+function displayAndWatch(lat, lon) {
+    userLocationLatitude = lat;
+    userLocationLongitude = lon;
+    getWellsData();
+    // set current position
+    setUserLocation();
+    // watch position
+    watchCurrentPosition();
+}
+
+var marker; 
+function setUserLocation() {
+    // marker for userLocation
+    marker = userLocation = new google.maps.Marker({
+        map: map,
+        position: new google.maps.LatLng(userLocationLatitude, userLocationLongitude),
+        title: "You are here",
+        icon: "../Content/Images/blueMarker.png",
+        draggable: true
+    });
+    // scroll to userLocation
+    map.panTo(new google.maps.LatLng(userLocationLatitude, userLocationLongitude));
+
+    google.maps.event.addListener(marker, 'dragend', function (event) {
+        userLocationLatitude = this.getPosition().lat();
+        userLocationLongitude = this.getPosition().lng();
+    });
+};
+
+
+function watchCurrentPosition() {
+
+    var positionTimer = navigator.geolocation.watchPosition(function(position) {
+        setMarkerPosition(userLocation, position);
+    });
+    console.log("watchCurrentPosition()");
+
+}
+
+function setMarkerPosition(marker, position) {
     userLocationLatitude = position.coords.latitude;
     userLocationLongitude = position.coords.longitude;
-    map.setCenter(latLng);
-    getWellsData();
 
+    marker.setPosition(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+    console.log(position);
+}
+
+function focusOnUser() {
     var latlng = new google.maps.LatLng(userLocationLatitude, userLocationLongitude);
-    marker = new google.maps.Marker({
-        position: latlng,
-        map: map,
-        icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 5
-        },
-        title: 'Dini Position'
-    });
+    map.setCenter(latlng);
+    map.setZoom(20);
 }
 
 function errorHandler(err) {
@@ -65,7 +120,7 @@ function errorHandler(err) {
 
 function getUserPosition() {
     if (navigator.geolocation) {
-        // timeout at 60000 milliseconds (20 seconds)
+        // timeout at 20000 milliseconds (20 seconds)
         var options = { timeout: 20000 };
         navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options);
     } else {
@@ -118,12 +173,11 @@ function addWell() {
         type: 'POST',
         dataType: 'json',
         data: data,
-        success: function () {
+        success: function() {
             alert(getRandomThanks());
         },
-        error: function (x, y, z) {
+        error: function(x, y, z) {
             alert(x + '\n' + y + '\n' + z);
         }
     });
 }
-
