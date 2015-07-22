@@ -8,20 +8,18 @@ var userLocationMarker;
 
 // the list of wells will be cached here after retrieval
 var wells = {};
+var wellMarkers = [];
 
 var userLocationLatitude;
 var userLocationLongitude;
-var userLocation;
 
-// get all Employees on page load!
+var defaultZoomLevel = 16;
+
 $(document).ready(function() {
-    //initializeMap();
-    //getUserPosition();
     initLocationProcedure();
 
     $('#addWell').click(function() {
         $('#addWell').toggle();
-        focusOnUser();
         $('#addWellConfirmation').toggle();
     });
 
@@ -29,33 +27,41 @@ $(document).ready(function() {
         alert('Merci, notiere mrs grad!');
         addWell();
     });
+
+    $('#refocusOnUser').click(function () {
+        focusOnUser();
+    });
 });
 
 function initLocationProcedure() {
     map = new google.maps.Map(document.getElementById('map-canvas'));
-    map.setZoom(15); // This will trigger a zoom_changed on the map
+    map.setZoom(defaultZoomLevel);
     map.setCenter(new google.maps.LatLng(0, 0));
     map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
-
-
     if (navigator.geolocation) {
-        var watchID = navigator.geolocation.watchPosition(function(position) {
-            displayAndWatch(position.coords.latitude, position.coords.longitude);
-        });
+        watchCurrentPosition();
     } else {
         alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
     }
 }
 
-//function locError(error) {
-//    // the current position could not be located
-//    alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
-//}
+function getPosition() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(successCallback, watchError, { timeout: 10000 });
+    } else {
+        alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
+    }
+}
+
+function successCallback(position) {
+    userLocationLatitude = position.coords.latitude;
+    userLocationLongitude = position.coords.longitude;
+}
 
 function displayAndWatch(lat, lon) {
     userLocationLatitude = lat;
     userLocationLongitude = lon;
-    getWellsData();
+
     // watch position
     watchCurrentPosition();
 }
@@ -63,7 +69,7 @@ function displayAndWatch(lat, lon) {
 function createUserMarker() {
     console.log(userLocationLatitude);
     // marker for userLocation
-    userLocationMarker = userLocation = new google.maps.Marker({
+    userLocationMarker = new google.maps.Marker({
         map: map,
         position: new google.maps.LatLng(userLocationLatitude, userLocationLongitude),
         title: "You are here",
@@ -73,36 +79,45 @@ function createUserMarker() {
     // scroll to userLocation
     map.panTo(new google.maps.LatLng(userLocationLatitude, userLocationLongitude));
 
-    google.maps.event.addListener(marker, 'dragend', function (event) {
+    google.maps.event.addListener(userLocationMarker, 'dragend', function() {
         userLocationLatitude = this.getPosition().lat();
         userLocationLongitude = this.getPosition().lng();
     });
 };
 
 function watchCurrentPosition() {
-
-    var positionTimer = navigator.geolocation.watchPosition(function(position) {
-        console.log("watchCurrentPosition() timer set")
-        createUserMarker();
-        setMarkerPosition(position);
-    });
-    console.log("watchCurrentPosition()");
-
+    var options = {
+        enableHighAccuracy: false,
+        timeout: 5000,
+        maximumAge: 0
+    };
+    navigator.geolocation.watchPosition(watchSuccess, watchError, options);
 }
 
-function setMarkerPosition(position) {   
-    console.log("hello: "+position);
-    console.log(position.coords);
+function watchSuccess(position) {
     userLocationLatitude = position.coords.latitude;
     userLocationLongitude = position.coords.longitude;
+    console.log("watchCurrentPosition successt");
+    //alert("watchCurrentPosition successt!");
+    createUserMarker();
+    setMarkerPosition(position);
+    getWellsData();
+}
 
+function watchError(err) {
+    console.warn('ERROR(' + err.code + '): ' + err.message);
+}
+
+function setMarkerPosition(position) {
+    userLocationLatitude = position.coords.latitude;
+    userLocationLongitude = position.coords.longitude;
     userLocationMarker.setPosition(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
 }
 
 function focusOnUser() {
     var latlng = new google.maps.LatLng(userLocationLatitude, userLocationLongitude);
     map.setCenter(latlng);
-    map.setZoom(20);
+    map.setZoom(16);
 }
 
 function errorHandler(err) {
@@ -114,24 +129,14 @@ function errorHandler(err) {
     }
 }
 
-//function getUserPosition() {
-//    if (navigator.geolocation) {
-//        // timeout at 20000 milliseconds (20 seconds)
-//        var options = { timeout: 20000 };
-//        navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options);
-//    } else {
-//        alert("Sorry, browser does not support geolocation!");
-//    }
-//}
-
 function getWellsData() {
-    var data = "lat=" + userLocationLatitude + "&lon=" + userLocationLongitude;
+    var queryString = "lat=" + userLocationLatitude + "&lon=" + userLocationLongitude;
     jQuery.support.cors = true;
     $.ajax({
         url: webApiUri,
         type: 'GET',
         dataType: 'json',
-        data: data,
+        data: queryString,
         success: function(data) {
             wells = data;
             displayWells(data);
@@ -145,14 +150,13 @@ function getWellsData() {
 function displayWells(positions) {
     $.each(positions, function(index, well) {
         var latlng = new google.maps.LatLng(well.Latitude, well.Longitude);
-        marker = new google.maps.Marker({
+        var marker = new google.maps.Marker({
             position: latlng,
             map: map,
             title: well.Info
         });
+        wellMarkers.push(marker);
     });
-
-
 }
 
 function addWell() {
