@@ -160,6 +160,7 @@ function focusOnUser() {
     map.setZoom(16);
 
     removeWellMarker();
+    //github checkin test
 }
 
 function errorHandler(err) {
