@@ -2,24 +2,32 @@
 //var webApiUri = "http://localhost:63251/api/Wells/";
 var webApiUri = "http://elixir.webapi.cheese-maker.ch/api/wells";
 
-var google;
-var map;
-var userLocationMarker;
+var google,
+    map,
+    userLocationMarker,
+    newWellMarker;
 
 // the list of wells will be cached here after retrieval
-var wells = {};
-var wellMarkers = [];
+var wells = {},
+    wellMarkers = [];
 
-var userLocationLatitude;
-var userLocationLongitude;
+var userLocationLatitude,
+    userLocationLongitude,
+    newWellLocationLatitude, 
+    newWellLocationLongitude;
 
 var defaultZoomLevel = 16;
+var closeLookZoomLevel = 20;
 
 $(document).ready(function() {
-    initLocationProcedure();
-
+    initializeMap();
+    initializeWatching().done(function() {
+        getWellsData();
+        setUserMarkerPosition();
+    });
     $('#addWell').click(function() {
         $('#addWell').toggle();
+        addWellMarker();
         $('#addWellConfirmation').toggle();
     });
 
@@ -33,16 +41,22 @@ $(document).ready(function() {
     });
 });
 
-function initLocationProcedure() {
+function initializeMap() {
     map = new google.maps.Map(document.getElementById('map-canvas'));
     map.setZoom(defaultZoomLevel);
     map.setCenter(new google.maps.LatLng(0, 0));
     map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+}
+
+var deferred;
+function initializeWatching() {
+    deferred = new $.Deferred();
     if (navigator.geolocation) {
-        watchCurrentPosition();
+        watchUserPosition();
     } else {
         alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
     }
+    return deferred.promise();
 }
 
 function getPosition() {
@@ -58,34 +72,47 @@ function successCallback(position) {
     userLocationLongitude = position.coords.longitude;
 }
 
-function displayAndWatch(lat, lon) {
-    userLocationLatitude = lat;
-    userLocationLongitude = lon;
-
-    // watch position
-    watchCurrentPosition();
-}
-
 function createUserMarker() {
-    console.log(userLocationLatitude);
-    // marker for userLocation
+    console.log("createUserMarker()");
     userLocationMarker = new google.maps.Marker({
         map: map,
         position: new google.maps.LatLng(userLocationLatitude, userLocationLongitude),
-        title: "You are here",
+        title: "Da bisch du!",
         icon: "../Content/Images/blueMarker.png",
-        draggable: true
     });
     // scroll to userLocation
     map.panTo(new google.maps.LatLng(userLocationLatitude, userLocationLongitude));
+};
 
-    google.maps.event.addListener(userLocationMarker, 'dragend', function() {
-        userLocationLatitude = this.getPosition().lat();
-        userLocationLongitude = this.getPosition().lng();
+function addWellMarker() {
+    console.log("addWellMarker()");
+    newWellMarker = new google.maps.Marker({
+        map: map,
+        position: new google.maps.LatLng(userLocationLatitude, userLocationLongitude),
+        title: "Da isch eine!",
+        icon: "../Content/Images/green-dot.png",
+        draggable: true
+    });
+    map.panTo(new google.maps.LatLng(userLocationLatitude, userLocationLongitude));
+
+    map.setZoom(closeLookZoomLevel );
+
+    google.maps.event.addListener(newWellMarker, 'dragend', function () {
+        newWellLocationLatitude = this.getPosition().lat();
+        newWellLocationLongitude = this.getPosition().lng();
     });
 };
 
-function watchCurrentPosition() {
+function removeWellMarker() {
+    if (newWellMarker != undefined) {
+        newWellMarker.setMap(null);
+        newWellMarker = undefined;
+        $('#addWell').toggle();
+        $('#addWellConfirmation').toggle();
+    }
+}
+
+function watchUserPosition() {
     var options = {
         enableHighAccuracy: false,
         timeout: 5000,
@@ -95,29 +122,35 @@ function watchCurrentPosition() {
 }
 
 function watchSuccess(position) {
+    //alert("watchSuccess(pos)"+position.coords.latitude +" "+ position.coords.longitude);
+    console.log("watchSuccess(position) with pos: "+position.coords.latitude +" "+ position.coords.longitude);
     userLocationLatitude = position.coords.latitude;
     userLocationLongitude = position.coords.longitude;
-    console.log("watchCurrentPosition successt");
-    //alert("watchCurrentPosition successt!");
-    createUserMarker();
-    setMarkerPosition(position);
-    getWellsData();
+    setUserMarkerPosition();
+    deferred.resolve();
 }
 
 function watchError(err) {
     console.warn('ERROR(' + err.code + '): ' + err.message);
 }
 
-function setMarkerPosition(position) {
-    userLocationLatitude = position.coords.latitude;
-    userLocationLongitude = position.coords.longitude;
-    userLocationMarker.setPosition(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
+function setUserMarkerPosition() {
+    if (userLocationMarker == undefined) {
+        createUserMarker();
+    }
+    console.log("setUserMarkerPosition()");
+    userLocationLatitude = userLocationLatitude;
+    userLocationLongitude = userLocationLongitude;
+    userLocationMarker.setPosition(new google.maps.LatLng(userLocationLatitude, userLocationLongitude));
 }
 
 function focusOnUser() {
+    console.log("focusOnUser()");
     var latlng = new google.maps.LatLng(userLocationLatitude, userLocationLongitude);
     map.setCenter(latlng);
     map.setZoom(16);
+
+    removeWellMarker();
 }
 
 function errorHandler(err) {
@@ -130,6 +163,7 @@ function errorHandler(err) {
 }
 
 function getWellsData() {
+    console.log("getWellsData()");
     var queryString = "lat=" + userLocationLatitude + "&lon=" + userLocationLongitude;
     jQuery.support.cors = true;
     $.ajax({
@@ -163,8 +197,8 @@ function addWell() {
     jQuery.support.cors = true;
 
     var data = {
-        Longitude: userLocationLongitude,
-        Latitude: userLocationLatitude,
+        Longitude: newWellLocationLongitude,
+        Latitude: newWellLocationLatitude,
         Info: 'Inserted from less'
     };
 
