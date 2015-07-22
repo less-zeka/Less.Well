@@ -1,17 +1,17 @@
-﻿//TODO local / Prod 
+//TODO local / Prod 
 //var webApiUri = "http://localhost:63251/api/Wells/";
 var webApiUri = "http://elixir.webapi.cheese-maker.ch/api/wells";
 
-// the map
+var google;
 var map;
+var userLocationMarker;
+
 // the list of wells will be cached here after retrieval
 var wells = {};
 
 var userLocationLatitude;
 var userLocationLongitude;
-
 var userLocation;
-var google;
 
 // get all Employees on page load!
 $(document).ready(function() {
@@ -39,11 +39,6 @@ function initLocationProcedure() {
 
 
     if (navigator.geolocation) {
-        //navigator.geolocation.getCurrentPosition(displayAndWatch, locError, {
-        //    enableHighAccuracy: true,
-        //    timeout: 60000,
-        //    maximumAge: 0
-        //});
         var watchID = navigator.geolocation.watchPosition(function(position) {
             displayAndWatch(position.coords.latitude, position.coords.longitude);
         });
@@ -52,25 +47,23 @@ function initLocationProcedure() {
     }
 }
 
-function locError(error) {
-    // the current position could not be located
-    alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
-}
+//function locError(error) {
+//    // the current position could not be located
+//    alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
+//}
 
 function displayAndWatch(lat, lon) {
     userLocationLatitude = lat;
     userLocationLongitude = lon;
     getWellsData();
-    // set current position
-    setUserLocation();
     // watch position
     watchCurrentPosition();
 }
 
-var marker; 
-function setUserLocation() {
+function createUserMarker() {
+    console.log(userLocationLatitude);
     // marker for userLocation
-    marker = userLocation = new google.maps.Marker({
+    userLocationMarker = userLocation = new google.maps.Marker({
         map: map,
         position: new google.maps.LatLng(userLocationLatitude, userLocationLongitude),
         title: "You are here",
@@ -86,22 +79,24 @@ function setUserLocation() {
     });
 };
 
-
 function watchCurrentPosition() {
 
     var positionTimer = navigator.geolocation.watchPosition(function(position) {
-        setMarkerPosition(userLocation, position);
+        console.log("watchCurrentPosition() timer set")
+        createUserMarker();
+        setMarkerPosition(position);
     });
     console.log("watchCurrentPosition()");
 
 }
 
-function setMarkerPosition(marker, position) {
+function setMarkerPosition(position) {   
+    console.log("hello: "+position);
+    console.log(position.coords);
     userLocationLatitude = position.coords.latitude;
     userLocationLongitude = position.coords.longitude;
 
-    marker.setPosition(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
-    console.log(position);
+    userLocationMarker.setPosition(new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
 }
 
 function focusOnUser() {
@@ -114,19 +109,20 @@ function errorHandler(err) {
     if (err.code == 1) {
         alert("Error: Access is denied!");
     } else if (err.code == 2) {
-        alert("Error: Position is unavailable!");
+        alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
+        //alert("Error: Position is unavailable!");
     }
 }
 
-function getUserPosition() {
-    if (navigator.geolocation) {
-        // timeout at 20000 milliseconds (20 seconds)
-        var options = { timeout: 20000 };
-        navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options);
-    } else {
-        alert("Sorry, browser does not support geolocation!");
-    }
-}
+//function getUserPosition() {
+//    if (navigator.geolocation) {
+//        // timeout at 20000 milliseconds (20 seconds)
+//        var options = { timeout: 20000 };
+//        navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options);
+//    } else {
+//        alert("Sorry, browser does not support geolocation!");
+//    }
+//}
 
 function getWellsData() {
     var data = "lat=" + userLocationLatitude + "&lon=" + userLocationLongitude;
