@@ -19,7 +19,8 @@ var userLocationLatitude,
 var defaultZoomLevel = 16;
 var closeLookZoomLevel = 20;
 
-$(document).ready(function() {
+$(document).ready(function () {
+    console.log("$(document).ready()")
     initializeMap();
     initializeWatching().done(function() {
         getWellsData();
@@ -42,6 +43,7 @@ $(document).ready(function() {
 });
 
 function initializeMap() {
+    console.log("initializeMap()");
     map = new google.maps.Map(document.getElementById('map-canvas'));
     map.setZoom(defaultZoomLevel);
     map.setCenter(new google.maps.LatLng(0, 0));
@@ -50,6 +52,7 @@ function initializeMap() {
 
 var deferred;
 function initializeWatching() {
+    console.log("initializeWatching()");
     deferred = new $.Deferred();
     if (navigator.geolocation) {
         watchUserPosition();
@@ -60,6 +63,7 @@ function initializeWatching() {
 }
 
 function getPosition() {
+    console.log("getPosition()");
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(successCallback, watchError, { timeout: 10000 });
     } else {
@@ -68,6 +72,7 @@ function getPosition() {
 }
 
 function successCallback(position) {
+    console.log("successCallback(position) with position: "+position.coords.latitude +" "+position.coords.longitude);
     userLocationLatitude = position.coords.latitude;
     userLocationLongitude = position.coords.longitude;
 }
@@ -104,6 +109,7 @@ function addWellMarker() {
 };
 
 function removeWellMarker() {
+    console.log("removeWellMarker()");
     if (newWellMarker != undefined) {
         newWellMarker.setMap(null);
         newWellMarker = undefined;
@@ -113,6 +119,7 @@ function removeWellMarker() {
 }
 
 function watchUserPosition() {
+    console.log("watchUserPosition()");
     var options = {
         enableHighAccuracy: false,
         timeout: 5000,
@@ -135,6 +142,8 @@ function watchError(err) {
 }
 
 function setUserMarkerPosition() {
+    console.log("setUserMarkerPosition()");
+
     if (userLocationMarker == undefined) {
         createUserMarker();
     }
@@ -182,6 +191,7 @@ function getWellsData() {
 }
 
 function displayWells(positions) {
+    console.log("displayWells(positions)");
     $.each(positions, function(index, well) {
         var latlng = new google.maps.LatLng(well.Latitude, well.Longitude);
         var marker = new google.maps.Marker({
@@ -194,6 +204,7 @@ function displayWells(positions) {
 }
 
 function addWell() {
+    console.log("addWell()");
     jQuery.support.cors = true;
 
     var data = {
