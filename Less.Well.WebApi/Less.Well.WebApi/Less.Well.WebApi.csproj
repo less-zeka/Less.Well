@@ -105,6 +105,7 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <None Include="Properties\PublishProfiles\Less.Well.WebApi.pubxml" />
+    <None Include="Properties\PublishProfiles\OpenSource.Well.WebApi.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

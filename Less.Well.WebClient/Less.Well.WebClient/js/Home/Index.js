@@ -1,6 +1,7 @@
 //TODO local / Prod 
 //var webApiUri = "http://localhost:63251/api/Wells/";
-var webApiUri = "http://elixir.webapi.cheese-maker.ch/api/wells";
+//var webApiUri = "http://elixir.webapi.cheese-maker.ch/api/wells";
+var webApiUri = "http://well.webapi.open-source.tips/api/wells";
 
 var google,
     map,
@@ -20,7 +21,7 @@ var defaultZoomLevel = 16;
 var closeLookZoomLevel = 20;
 
 $(document).ready(function () {
-    console.log("$(document).ready()")
+    console.log("$(document).ready()");
     initializeMap();
     initializeWatching().done(function() {
         getWellsData();
@@ -198,7 +199,7 @@ function displayWells(positions) {
         var marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            title: well.Info
+            title: well.Info + " Id:" + well.Id
         });
         wellMarkers.push(marker);
     });
