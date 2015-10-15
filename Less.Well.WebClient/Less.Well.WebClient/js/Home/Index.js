@@ -212,7 +212,7 @@ function addWell() {
     var data = {
         Longitude: newWellLocationLongitude,
         Latitude: newWellLocationLatitude,
-        Info: 'Inserted from less'
+        Info: 'Inserted from facebookId: ' + facebookId
     };
 
     $.ajax({
