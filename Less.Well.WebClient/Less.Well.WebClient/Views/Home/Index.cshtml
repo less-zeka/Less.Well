@@ -1,16 +1,25 @@
-﻿@{
+﻿@model Less.Well.WebClient.Models.IndexViewModel
+
+@{
     ViewBag.Title = "open-source.tips";
 }
 
 <div class="row ">
-    <div id="map-canvas" class="col-xs-11 col-sm-8"></div>
-    <div id="refocusOnUser" class="btn btn-danger col-xs-8 col-sm-4">Wo bini?</div>
+    <div id="map-canvas" class="col-xs-10 col-sm-8"></div>
+    @*<div id="refocusOnUser" class="btn btn-danger col-xs-8 col-sm-4 hidden-xs">Meine Position</div>
+    <div id="refocusOnUserIcon" class="btn col-xs-2 hidden-sm hidden-md hidden-lg"><img src="~/Content/Images/blueMarker.png" /></div>*@
+</div>
+<div>
     <div id="addWell" style="display: none;" class="btn btn-danger col-xs-8 col-sm-4">Grad bi mir isch eine!</div>
     <p id="status" class="col-xs-6">Muesch iloge um e brunne ds erfasse.</p>
     <div id="addWellConfirmation" style="display: none;" class="btn btn-success col-xs-8 col-sm-4">Ja, genau; da isch eine!</div>
 </div>
-<div class="clearfix"></div>
-<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+
+@if (Model.Refresh)
+{
+    <script type="text/javascript">SetupMap();</script>
+}
+
 @section scripts {
-    @Scripts.Render("~/bundles/home")
+    @Scripts.Render("~/bundles/home")    
 }

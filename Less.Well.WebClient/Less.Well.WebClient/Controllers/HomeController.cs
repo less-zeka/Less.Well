@@ -1,4 +1,6 @@
-﻿using System.Web.Mvc;
+﻿using System.Threading.Tasks;
+using System.Web.Mvc;
+using Less.Well.WebClient.Models;
 
 namespace Less.Well.WebClient.Controllers
 {
@@ -6,12 +8,26 @@ namespace Less.Well.WebClient.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            var model = new IndexViewModel
+            {
+                Refresh = true
+            };
+            return View("Index", model);
+        }
+
+        public ActionResult Home()
+        {
+            var model = new IndexViewModel
+            {
+                Refresh = true
+            };
+            return PartialView("Index", model);
         }
 
         public ActionResult About()
         {
-            return View();
+
+            return PartialView("About");
         }
     }
 }

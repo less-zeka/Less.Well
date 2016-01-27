@@ -22,18 +22,32 @@ var closeLookZoomLevel = 20;
 
 $(document).ready(function () {
     console.log("$(document).ready()");
+    SetupMap();
+});
+
+var counter = 0;
+function SetupMap() {
+    counter++;
+    if (counter % 2 == 0) {
+        return;
+    }
+    wells = {};
+    wellMarkers = [];
+    map = [];
+    console.log("setting up!");
+
     initializeMap();
-    initializeWatching().done(function() {
+    initializeWatching().done(function () {
         getWellsData();
         setUserMarkerPosition();
     });
-    $('#addWell').click(function() {
+    $('#addWell').click(function () {
         $('#addWell').toggle();
         addWellMarker();
         $('#addWellConfirmation').toggle();
     });
 
-    $('#addWellConfirmation').click(function() {
+    $('#addWellConfirmation').click(function () {
         alert('Merci, notiere mrs grad!');
         addWell();
     });
@@ -41,13 +55,11 @@ $(document).ready(function () {
     $('#refocusOnUser').click(function () {
         focusOnUser();
     });
-});
-
+}
 function initializeMap() {
     console.log("initializeMap()");
     map = new google.maps.Map(document.getElementById('map-canvas'));
     map.setZoom(defaultZoomLevel);
-    map.setCenter(new google.maps.LatLng(0, 0));
     map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
 }
 
@@ -66,7 +78,7 @@ function initializeWatching() {
 function getPosition() {
     console.log("getPosition()");
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(successCallback, watchError, { timeout: 10000 });
+        navigator.geolocation.getCurrentPosition(successCallback, watchError, { timeout: 10000 }, { enableHighAccuracy: true });
     } else {
         alert("Dis grät wott mr dini GPS-Koordinate nid säge. Chasch das äch ischteue?");
     }
@@ -122,9 +134,10 @@ function removeWellMarker() {
 function watchUserPosition() {
     console.log("watchUserPosition()");
     var options = {
-        enableHighAccuracy: false,
-        timeout: 5000,
-        maximumAge: 0
+        enableHighAccuracy: true,
+        timeout: 60000,
+        maximumAge: 0,
+        frequency: 3000
     };
     navigator.geolocation.watchPosition(watchSuccess, watchError, options);
 }
