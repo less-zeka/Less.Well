@@ -20,7 +20,9 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">OpenSource</a>
+                    <div>
+                        @Html.ActionLink("OpenSource", "Index", "Home", new { @class="navbar-brand"})
+                    </div>
                 </div>
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
@@ -48,10 +50,6 @@
             </div>
             <fb:login-button id="facebookLogin" scope="public_profile,email" onlogin="checkLoginState();">
             </fb:login-button>
-            <hr />
-            <footer>
-                <p>&copy; @DateTime.Now.Year - open-source.tips</p>
-            </footer>
         </div>
         <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
         @Scripts.Render("~/bundles/jquery")

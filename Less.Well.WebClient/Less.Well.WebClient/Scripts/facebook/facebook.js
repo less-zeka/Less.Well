@@ -34,11 +34,11 @@ function statusChangeCallback(response) {
         showAddButton();
     } else if (response.status === 'not_authorized') {
         // The person is logged into Facebook, but not your app.
-        document.getElementById('status').innerHTML = 'Muesch iloge um e brunne ds erfasse.';
+        document.getElementById('status').innerHTML = 'Du musst einloggen um eine Quelle zu erfassen.';
     } else {
         // The person is not logged into Facebook, so we're not sure if
         // they are logged into this app or not.
-        document.getElementById('status').innerHTML = 'Muesch iloge um e brunne ds erfasse.';
+        document.getElementById('status').innerHTML = 'Du musst einloggen um eine Quelle zu erfassen.';
     }
 }
 

@@ -1,4 +1,3 @@
-﻿// get all Employees on page load!
-$(document).ready(function() {
+﻿$(document).ready(function() {
     $('#thankYouP').append(getRandomThanks());
 });

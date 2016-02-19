@@ -10,15 +10,10 @@
     <div id="refocusOnUserIcon" class="btn col-xs-2 hidden-sm hidden-md hidden-lg"><img src="~/Content/Images/blueMarker.png" /></div>*@
 </div>
 <div>
-    <div id="addWell" style="display: none;" class="btn btn-danger col-xs-8 col-sm-4">Grad bi mir isch eine!</div>
-    <p id="status" class="col-xs-6">Muesch iloge um e brunne ds erfasse.</p>
-    <div id="addWellConfirmation" style="display: none;" class="btn btn-success col-xs-8 col-sm-4">Ja, genau; da isch eine!</div>
+    <div id="addWell" style="display: none;" class="btn btn-danger col-xs-8 col-sm-4">Quelle Erfassen</div>
+    <p id="status" class="col-xs-6">Du musst einloggen um eine Quelle zu erfassen.</p>
+    <div id="addWellConfirmation" style="display: none;" class="btn btn-success col-xs-8 col-sm-4">Ja, genau - da ist eine!</div>
 </div>
-
-@if (Model.Refresh)
-{
-    <script type="text/javascript">SetupMap();</script>
-}
 
 @section scripts {
     @Scripts.Render("~/bundles/home")    
