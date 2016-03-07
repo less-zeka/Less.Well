@@ -18,7 +18,6 @@ namespace Less.Well.WebApi.Controllers
         private readonly LessWellWebApiContext _database = new LessWellWebApiContext();
 
         // GET: api/Wells
-        // GET: api/Routes?longitude=7.4792713&latitude=46.9742651
         [HttpGet]
         [ResponseType(typeof (IQueryable<Models.Well>))]
         public IHttpActionResult GetWells(double lat, double lon)
@@ -45,11 +44,6 @@ namespace Less.Well.WebApi.Controllers
             _database.SaveChanges();
             return Ok();
         }
-
-        //public IQueryable<Models.Well> GetWells()
-        //{
-        //    return db.Wells;
-        //}
 
         // GET: api/Wells/5
         [ResponseType(typeof (Models.Well))]
@@ -90,10 +84,7 @@ namespace Less.Well.WebApi.Controllers
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return StatusCode(HttpStatusCode.NoContent);
@@ -103,7 +94,6 @@ namespace Less.Well.WebApi.Controllers
         [ResponseType(typeof (Models.Well))]
         [HttpPost]
         public async Task<IHttpActionResult> PostWell(Models.Well well)
-        //public async Task<IHttpActionResult> PostWell(double lat, double lon)
         {
             if(!ModelIsValid(well))
             {
